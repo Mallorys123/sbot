@@ -33,6 +33,8 @@ let youtubeSearched = false; // If youtube has been searched (for !add command)
 let selectUser; // Selecting user from guild
 
 bot.on("ready", async () => {
+	bot.user.setStatus("dnd");
+	
 	console.log(`Bot is ready! ${bot.user.username}`);
 
 	/*try {
@@ -58,10 +60,8 @@ bot.on("message", async message => {
 		case "userinfo":
 			if (args.length == 0) { // Displays the message author info if args are empty
 				let embed = new Discord.RichEmbed()
-					.setThumbnail(message.author.avatarURL)
-					.setColor("#8A2BE2")
+					.setColor("#000000")
 					.setDescription(`User info for: **${message.author.username}**`)
-					.addField("Avatar:", `[Link](${message.author.avatarURL})`, true)
 					.addField("Status:", message.author.presence.status, true)
 					.addField("Bot: ", message.author.bot, true)
 					.addField("In game: ", message.author.presence.game ? message.author.presence.game : "Not in game", true)
@@ -75,10 +75,8 @@ bot.on("message", async message => {
 				if (message.guild.available) {
 					let selectUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
 					let embed = new Discord.RichEmbed()
-						.setThumbnail(selectUser.user.displayAvatarURL)
-						.setColor("#8A2BE2")
+						.setColor("#000000")
 						.setDescription(`User info for: **${selectUser.user.username}**`)
-						.addField("Avatar:", `[Link](${selectUser.user.displayAvatarURL})`, true)
 						.addField("Status:", selectUser.user.presence.status, true)
 						.addField("Bot: ", selectUser.user.bot, true)
 						.addField("In game: ", selectUser.user.presence.game ? selectUser.user.presence.game : "Not in game", true)
@@ -95,14 +93,14 @@ bot.on("message", async message => {
 		case "play":
 			if (args.length == 0 && queue.length > 0) {
 				if (!message.member.voiceChannel) {
-					message.reply("you need to be in a voice channel to play music. Please, join one and try again.");
+					message.reply("**يجب ان تكون بروم صوتي**");
 				} else {
 					isPlaying = true;
 					playMusic(queue[0], message);
 					message.reply(`now playing **${songsQueue[0]}**`);
 				}
 			} else if (args.length == 0 && queue.length == 0) {
-				message.reply("queue is empty now, type !play [song name] or !yt [song name] to play/search new songs!");
+				message.reply("**قائمة الانتظار فارغة، قم بتشغيل اي شيء**");
 			} else if (queue.length > 0 || isPlaying) {
 				getID(args).then(id => {
 					if (id) {
@@ -112,7 +110,7 @@ bot.on("message", async message => {
 							songsQueue.push(ytResults[0]);
 						}).catch(error => console.log(error));
 					} else {
-						message.reply("sorry, couldn't find the song.");
+						message.reply("**لا يمكن العثور عليها**");
 					}
 				}).catch(error => console.log(error));
 			} else {
@@ -126,7 +124,7 @@ bot.on("message", async message => {
 							songsQueue.push(ytResults[0]);
 						}).catch(error => console.log(error));
 					} else {
-						message.reply("sorry, couldn't find the song.");
+						message.reply("**لا يمكن العثور عليها**");
 					}
 				}).catch(error => console.log(error));
 			}
@@ -135,7 +133,7 @@ bot.on("message", async message => {
 		case "skip":
 			console.log(queue);
 			if (queue.length === 1) {
-				message.reply("queue is empty now, type !play [song name] or !yt [song name] to play/search new songs!");
+				message.reply("**قائمة الانتظار فارغة، قم بتشغيل اي شيء**");
 				dispatcher.end();
 				setTimeout(() => voiceChannel.leave(), 1000);
 			} else {
@@ -145,47 +143,47 @@ bot.on("message", async message => {
 
 					if (skipRequest >= Math.ceil((voiceChannel.members.size - 1) / 2)) {
 						skipSong(message);
-						message.reply("your skip has been added to the list. Skipping!");
+						message.reply("**تم اضافة التخطي الخاص بك الى القائمة**");
 					} else {
-						message.reply(`your skip has been added to the list. You need **${Math.ceil((voiceChannel.members.size - 1) / 2) - skipRequest}** more to skip current song!`);
+						message.reply(`**تم اضافة التخطي الخاص بك الى القائمة**. انت تحتاج **${Math.ceil((voiceChannel.members.size - 1) / 2) - skipRequest}** اكثر لتخطي هذا المقطع`);
 					}
 				} else {
-					message.reply("you already voted to skip!");
+					message.reply("**انت بالفعل مصوت للتخطي**");
 				}
 			}
 			break;
 
 		case "queue":
 			if (queue.length === 0) { // if there are no songs in the queue, send message that queue is empty
-				message.reply("queue is empty, type !play or !yt to play/search new songs!");
+				message.reply("**قائمة الانتضار فارغة، قم بتشغيل اي شيء**");
 			} else if (args.length > 0 && args[0] == 'remove') { // if arguments are provided and first one is remove
 				if (args.length == 2 && args[1] <= queue.length) { // check if there are no more than 2 arguments and that second one is in range of songs number in queue
 					// then remove selected song from the queue
-					message.reply(`**${songsQueue[args[1] - 1]}** has been removed from the queue. Type !queue to see the current queue.`);
+					message.reply(`**${songsQueue[args[1] - 1]}** تم حذفها من القائمة .`);
 					queue.splice(args[1] - 1, 1);
 					songsQueue.splice(args[1] - 1, 1);
 				} else { // if there are more than 2 arguments and the second one is not in the range of songs number in queue, send message
-					message.reply(`you need to enter valid queued song number (1-${queue.length}).`);
+					message.reply(`تحتاج ادخال رقم المقطع في قائمة الانتظار الصالحة (1-${queue.length}).`);
 				}
 			} else if (args.length > 0 && args[0] == 'clear') { // same as remove, only clears queue if clear is first argument
 				if (args.length == 1) {
 					// reseting queue and songsQueue, but leaving current song
-					message.reply("all upcoming songs have been removed from the queue. type !play or !yt to play/search new songs!");
+					message.reply("**تمت ازالة جميع المقاطع في قائمة الانتظار**");
 					queue.splice(1);
 					songsQueue.splice(1);
 				} else {
-					message.reply("you need to type !queue clear without following arguments.");
+					message.reply("تحتاج الى كتابة $queue واضح");
 				}
 			} else if (args.length > 0 && args[0] == 'shuffle') {
 				let tempA = [songsQueue[0]];
 				let tempB = songsQueue.slice(1);
 				songsQueue = tempA.concat(shuffle(tempB));
-				message.channel.send("Queue has been shuffled. Type !queue to see the new queue!");
+				message.channel.send("تم تبديل قائمة الانتظار، اكتب $queue لمشاهدة قائمة الانتظار الجديده");
 			} else { // if there are songs in the queue and queue commands is without arguments display current queue
 				let format = "```"
 				for (const songName in songsQueue) {
 					if (songsQueue.hasOwnProperty(songName)) {
-						let temp = `${parseInt(songName) + 1}: ${songsQueue[songName]} ${songName == 0 ? "**(Current Song)**" : ""}\n`;
+						let temp = `${parseInt(songName) + 1}: ${songsQueue[songName]} ${songName == 0 ? "**(المقطع الحالي)**" : ""}\n`;
 						if ((format + temp).length <= 2000 - 3) {
 							format += temp;
 						} else {
@@ -204,7 +202,7 @@ bot.on("message", async message => {
 			if (isPlaying) {
 				queue.splice(1, 0, queue[0]);
 				songsQueue.splice(1, 0, songsQueue[0]);
-				message.reply(`**${songsQueue[0]}** will be played again.`);
+				message.reply(`**${songsQueue[0]}** سوف يشتغل مرة اخرى`);
 			}
 			break;
 
@@ -215,13 +213,13 @@ bot.on("message", async message => {
 
 		case "yt":
 			if (args.length == 0) {
-				message.reply("you need to enter search term (!yt [search term]).");
+				message.reply("انت تحتاج الى كتابة عنوان البحث");
 			} else {
-				message.channel.send("```Searching youtube...```");
+				message.channel.send("```Searching youtube..```");
 				getYouTubeResultsId(args, 5).then(ytResults => {
 					ytResultAdd = ytResults;
 					let ytEmbed = new Discord.RichEmbed()
-						.setColor("#FF0000")
+						.setColor("#000000")
 						.setAuthor("Youtube search results: ", icon_url = "https://cdn1.iconfinder.com/data/icons/logotypes/32/youtube-512.png")
 						.addField("1:", "```" + ytResults[0] + "```")
 						.addField("2:", "```" + ytResults[1] + "```")
@@ -229,7 +227,7 @@ bot.on("message", async message => {
 						.addField("4:", "```" + ytResults[3] + "```")
 						.addField("5:", "```" + ytResults[4] + "```")
 						.addBlankField()
-						.setFooter("Send !add [result number] to queue the song.");
+						.setFooter("اكتب !add لأضافه المقطع بقائمة الانتظار");
 					message.channel.send(ytEmbed);
 					youtubeSearched = true;
 				}).catch(err => console.log(err));
@@ -239,7 +237,7 @@ bot.on("message", async message => {
 		case "add":
 			if (youtubeSearched === true) {
 				if (!re.test(args)) {
-					message.reply("you entered the wrong song number or character. Please only enter 1-5 for song number to be queued.");
+					message.reply("قمت بادخال رقم خاطئ، يرجى ادخال من 1-5 فقط");
 				} else {
 					let choice = ytResultAdd[args - 1];
 					getID(choice).then(id => {
@@ -254,21 +252,21 @@ bot.on("message", async message => {
 					youtubeSearched = false;
 				}
 			} else {
-				message.reply("you need to use !yt [search term] command first to add song from the list to the queue.");
+				message.reply("يجب البحث باستخدام اليوتيوب لاضافة المقطع من القائمة");
 			}
 			break;
 
 		case "vol":
 			if (args.length == 0 && dispatcher) {
-				message.reply(`current volume is ${dispatcher.volume}. Type !vol [percentage - 0 to 200] to set music volume.`);
+				message.reply(`الصوت الحالي : ${dispatcher.volume}. ،!vol [ 0-200 ]`);
 			} else if (args.length > 0 && regVol.test(args) == true && dispatcher) {
 				dispatcher.setVolume(args * 0.01);
 				message.reply(`music volume has been set to ${args}%.`);
 				console.log(dispatcher.volume);
 			} else if (!regVol.test(args) && dispatcher) {
-				message.reply("you need to enter a number in 0-200 range.");
+				message.reply("يجب ادخال رقم الصوت من 0-200");
 			} else {
-				message.reply("you can only set music volume if music is playing.");
+				message.reply("يمكنك فقط عند تشغيل اي مقطع");
 			}
 			break;
 
